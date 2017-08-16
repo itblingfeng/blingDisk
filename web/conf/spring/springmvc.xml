@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+http://www.springframework.org/schema/mvc
+http://www.springframework.org/schema/mvc/spring-mvc.xsd
+http://www.springframework.org/schema/context
+http://www.springframework.org/schema/context/spring-context.xsd">
+    <context:property-placeholder location="conf/resource/resource.properties"/>
+    <!--扫描基本包-->
+       <context:component-scan base-package="cn.blingfeng.disk.controller"/>
+    <mvc:interceptors>
+        <mvc:interceptor>
+            <mvc:mapping path="/**"/>
+            <mvc:exclude-mapping path="/js/**"/>
+            <mvc:exclude-mapping path="/css/**"/>
+            <mvc:exclude-mapping path="/fonts/**"/>
+            <mvc:exclude-mapping path="/image/**"/>
+            <bean class="cn.blingfeng.disk.interceptor.LoginInterceptor"></bean>
+        </mvc:interceptor>
+    </mvc:interceptors>
+    <mvc:resources mapping="/js/**" location="/js/"/>
+    <mvc:resources mapping="/image/**" location="/image/"/>
+    <mvc:resources mapping="/css/**" location="/css/"/>
+    <mvc:resources mapping="/fonts/**" location="/fonts/"/>
+       <!--注解驱动-->
+       <mvc:annotation-driven/>
+       <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver" id="internalResourceViewResolver">
+           <property name="prefix" value="/WEB-INF/jsp/"/>
+           <property name="suffix" value=".jsp"/>
+       </bean>
+</beans>
