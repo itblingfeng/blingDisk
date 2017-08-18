@@ -12,7 +12,7 @@ public interface TbFileTypeMapper {
 
     int deleteByPrimaryKey(Long id);
 
-    int insert(TbFileType record);
+    Long insert(TbFileType record);
 
     int insertSelective(TbFileType record);
 

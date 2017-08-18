@@ -6,4 +6,9 @@
 http://www.springframework.org/schema/context
 http://www.springframework.org/schema/context/spring-context.xsd">
        <context:component-scan base-package="cn.blingfeng.disk.service"/>
+       <bean class="cn.blingfeng.disk.utils.FastDFSClient" id="fastDFSClient">
+              <constructor-arg >
+                     <value>E:\e3项目\cn.blingfeng.disk\web\conf\resource\fdfs_client.conf</value>
+              </constructor-arg>
+       </bean>
 </beans>

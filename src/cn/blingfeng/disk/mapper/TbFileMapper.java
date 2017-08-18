@@ -14,7 +14,7 @@ public interface TbFileMapper {
 
     int deleteByPrimaryKey(Long id);
 
-    int insert(TbFile record);
+    Long insert(TbFile record);
 
     int insertSelective(TbFile record);
 

@@ -16,9 +16,9 @@
     <meta name="description" content="">
     <meta name="author" content="">
     <link rel="icon" href="../../js/bootstrap-3.3.7/docs/favicon.ico">
-    <script src="/js/jquery-1.5.1.min.js"></script>
+    <script src="/js/jquery-1.11.0.min.js" type="text/javascript"></script>
     <title>登录</title>
-
+    <script src="/js/bootstrap-3.3.7/docs/dist/js/bootstrap.min.js"></script>
     <!-- Bootstrap core CSS -->
     <link href="/js/bootstrap-3.3.7/docs/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="/css/jquery.alerts.css" />
@@ -41,11 +41,21 @@
 </head>
 
 <body>
-
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title" id="myModalLabel">提示</h4>
+            </div>
+            <div class="modal-body" id="modal_value"></div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
 <div class="container">
 
     <form class="form-signin" id="formlogin" method="post">
-        <h2 class="form-signin-heading">bling网盘登录</h2>
+        <h2 class="form-signin-heading">Bling网盘登录</h2>
         <label for="inputText" class="sr-only">Username</label>
         <input type="text" id="inputText" class="form-control" name="username" placeholder="Username" required autofocus>
         <label for="inputPassword" class="sr-only">Password</label>
@@ -87,16 +97,15 @@
         doLogin:function() {
             $.post("/user/login", $("#formlogin").serialize(),function(data){
                 if (data.status == 200) {
-                    jAlert('登录成功！',"提示", function(){
-                        if (redirectUrl == "") {
-                            location.href = "http://localhost:8080/index";
-                        } else {
-                            location.href = redirectUrl;
-                        }
-                    });
+                    if (redirectUrl == "") {
+                        location.href = "http://localhost:8080/index";
+                    } else {
+                        location.href = redirectUrl;
+                    };
 
                 } else {
-                    jAlert("登录失败，原因是：" + data.msg,"失败");
+                    $("#modal_value").html(data.msg);
+                    $('#myModal').modal('toggle');
                 }
             });
         }

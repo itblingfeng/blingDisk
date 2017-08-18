@@ -17,17 +17,23 @@ http://www.springframework.org/schema/context/spring-context.xsd">
             <mvc:exclude-mapping path="/js/**"/>
             <mvc:exclude-mapping path="/css/**"/>
             <mvc:exclude-mapping path="/fonts/**"/>
-            <mvc:exclude-mapping path="/image/**"/>
+            <mvc:exclude-mapping path="/img/**"/>
             <bean class="cn.blingfeng.disk.interceptor.LoginInterceptor"></bean>
         </mvc:interceptor>
     </mvc:interceptors>
     <mvc:resources mapping="/js/**" location="/js/"/>
-    <mvc:resources mapping="/image/**" location="/image/"/>
+    <mvc:resources mapping="/img/**" location="/img/"/>
     <mvc:resources mapping="/css/**" location="/css/"/>
     <mvc:resources mapping="/fonts/**" location="/fonts/"/>
        <!--注解驱动-->
        <mvc:annotation-driven/>
-       <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver" id="internalResourceViewResolver">
+   <bean id="multipartResolver"
+    class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+    <!-- 设定默认编码 -->
+    <property name="defaultEncoding" value="UTF-8"></property>
+    <!-- 设定文件上传的最大值5MB，5*1024*1024 -->
+</bean>
+    <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver" id="internalResourceViewResolver">
            <property name="prefix" value="/WEB-INF/jsp/"/>
            <property name="suffix" value=".jsp"/>
        </bean>
