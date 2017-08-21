@@ -62,7 +62,7 @@
         <input type="password" id="inputPassword" class="form-control" name="password" placeholder="Password" required>
         <div class="checkbox">
             <label>
-                <input type="checkbox" value="remember-me"> 记住我
+                <input type="checkbox" value="remember-me" id="remember"> 记住我
             </label>
         </div>
         <a class="btn btn-lg btn-primary btn-block" id="login_sub">登录</a>
@@ -73,6 +73,7 @@
 
 <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
 <script src="/js/bootstrap-3.3.7/docs/assets/js/ie10-viewport-bug-workaround.js"></script>
+<script type="text/javascript" src="js/jquery.cookie.js"></script>
 <script type="text/javascript">
     var redirectUrl = "${redirect}";
     var LOGIN={
@@ -97,11 +98,18 @@
         doLogin:function() {
             $.post("/user/login", $("#formlogin").serialize(),function(data){
                 if (data.status == 200) {
+                    if($("#remember").prop("checked")){
+                        $.cookie('username',$("#inputText").val(), { expires: 7 });
+                        $.cookie('password',$("#inputPassword").val(), { expires: 7 });
+                    }else{
+                        $.cookie('username', '', { expires: -1 });
+                        $.cookie('password', '', { expires: -1 });
+                    }
                     if (redirectUrl == "") {
                         location.href = "http://localhost:8080/index";
                     } else {
                         location.href = redirectUrl;
-                    };
+                    }
 
                 } else {
                     $("#modal_value").html(data.msg);
@@ -114,6 +122,14 @@
         $("#login_sub").click(function () {
             LOGIN.login();
         });
+       var $username= $.cookie('username');
+       var $password= $.cookie('password');
+        if($username!=null&&$password!=null){
+            $("#inputText").val($username);
+            $("#inputPassword").val($password);
+            $("#remember").prop("checked",true);
+        }
+
     });
 </script>
 </body>

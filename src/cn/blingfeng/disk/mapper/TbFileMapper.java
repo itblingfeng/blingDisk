@@ -29,6 +29,7 @@ public interface TbFileMapper {
     int updateByPrimaryKeySelective(TbFile record);
 
     int updateByPrimaryKey(TbFile record);
-    List<DiskFile> getFileList(Long userId);
-    List<DiskFile> conditionQueryFiles(Long userId,Long typeId);
+    List<DiskFile> getFileList(Long userId,Long parenId);
+    List<DiskFile> conditionQueryFiles(Long userId, Long typeId);
+    List<DiskFile> getFileListById(Long parentId,Long userId);
 }

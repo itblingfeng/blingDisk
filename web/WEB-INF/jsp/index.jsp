@@ -99,6 +99,7 @@
     <script src="/js/bootstrap-3.3.7/docs/assets/js/vendor/holder.min.js"></script>
     <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
     <script src="/js/bootstrap-3.3.7/docs/assets/js/ie10-viewport-bug-workaround.js"></script>
+
     <script>
         /*function FileUpload(){
             $.ajax({
@@ -120,7 +121,7 @@
             }
             $('#myModal2').modal('hide');
             var $filename = $(".file-caption-name").html();
-            $("#newUpload").append("<li><a href='#'>" + $filename + "</a><li/>");
+            $("#newUpload").append("<li><a href='#'>" + $filename + "</a><div class='progress'> <div class='progress-bar progress-bar-striped active' role='progressbar' aria-valuenow='100' aria-valuemin='0' aria-valuemax='100' style='width: 100%'>  </div> </div><li/>");
             $.ajax({
                 url: '/disk/upload',
                 type: 'POST',
@@ -145,31 +146,72 @@
             location.reload();
         };
         $(function () {
-            $("#allchecked").click(function () {
-                if (this.checked) {
-                    $("tbody :checkbox").prop("checked", true);
-                } else {
-                    $("tbody :checkbox").prop("checked", false);
-                }
+//自动展开
+            $('.dropdown').mouseenter(function(){
+                $(this).addClass('open');
             });
-
+//自动关闭
+            $('.dropdown').mouseleave(function(){
+                $(this).removeClass('open');
+            });
         });
 
         function deleteFile(url) {
             /*发送一个ajax请求，然后刷新页面即可*/
             $.get("/deleteFile", {"url":url}, function (data) {
-                if (data.status == 200) {
-                    $('#modal_value').html("文件删除成功");
+                    if (data.status == 200) {
+                        $('#modal_value').html("文件删除成功");
+                        $('#myModal').modal('show');
+                        setTimeout('refresh()', 2000);
+                    }else
+                    {
+                        $('#modal_value').html("文件删除失败:"+data.msg);
+                        $('#myModal').modal('show');
+                    }
+                }
+            );
+
+        };
+        function mkDir(){
+            var $dirName=$("#dirName").val();
+            $('#myModal1').modal('hide');
+            $.post("/mkDir",{"dirName":$dirName,"parentId":${parentId}},function (data) {
+                if(data.status==200){
+                    $('#modal_value').html("文件夹创建成功:");
                     $('#myModal').modal('show');
-                    setTimeout('refresh()', 2000);
-                }else
-                {
-                    $('#modal_value').html("文件删除失败:"+data.msg);
-                    $('#myModal').modal('show');
+                    setTimeout('refresh()', 1000);
+                }
+            });
+        };
+        function dirOpen(id){
+            location.href="${pageContext.request.contextPath}/disk/list?parentId="+id;
+        };
+        function backLevel(parentId){
+            location.href="${pageContext.request.contextPath}/disk/backLevel?parentId="+parentId;
+        };
+        function deleteFiles(){
+            var obj=$("input[name='fileId']");
+            var ids =[];
+            for(i in obj){
+                if(obj[i].checked){
+                    ids.push(obj[i].value);
                 }
             }
-        )
-            ;
+            ids=ids.join(",");
+            $.post("/disk/deleteFiles",{"ids":ids},function (data) {
+                if(data.status==200){
+                    $('#modal_value').html("文件删除成功！");
+                    $('#myModal').modal('show');
+                    setTimeout('refresh()', 1000);
+                }
+            });
+        };
+        function checkAll(){
+            $("tbody :checkbox").prop("checked", true);
+
+        };
+        function checkInvert(){
+            $("tbody :checkbox").prop("checked", false);
         };
 
     </script>
@@ -177,6 +219,25 @@
 </head>
 
 <body>
+
+<div class="modal fade" id="myModal1" tabindex="-1" role="dialog" aria-labelledby="myModalLabel1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title" id="myModalLabel1">创建文件夹</h4>
+            </div>
+            <div class="modal-body" id="modal_value1">
+                <div class="input-group">
+                    <input type="text" class="form-control" placeholder="来起一个华丽的名字吧(￣︶￣)↗" id="dirName" name="dirName"/>
+                    <span class="input-group-btn">
+        <button class="btn btn-default" type="button" onclick="mkDir()">创建</button>
+      </span>
+                </div><!-- /input-group -->
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
 <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel2" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -210,11 +271,13 @@
                         <li><a href="#">Action</a></li>
                     </ul>
                 </li>
-                <li class="dropdown">
+                <li class="dropdown" id="dropdownfix">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
                        aria-expanded="false">最近上传 <span class="caret"></span></a>
                     <ul class="dropdown-menu" id="lastUpload">
-                        <li><a href="#">Action</a></li>
+                        <c:forEach items="${lastUpload}" var="lastFile">
+                            <li><a href="#">${lastFile.lastUpload}</a></li>
+                        </c:forEach>
                     </ul>
                 </li>
                 <li class="dropdown">
@@ -251,14 +314,14 @@
     <div class="row">
         <div class="col-sm-2 col-md-2 sidebar">
             <ul class="nav nav-sidebar">
-                <li class="active"><a href="${pageContext.request.contextPath}/disk/list">全部文件 <span class="sr-only">(current)</span></a>
+                <li class="active"><a href="${pageContext.request.contextPath}/index">全部文件 <span class="sr-only">(current)</span></a>
                 </li>
             </ul>
             <ul class="nav nav-sidebar">
                 <li><a href="${pageContext.request.contextPath}/disk/index?typeId=4">xml文件</a></li>
                 <li><a href="/disk/index?typeId=5">jar包</a></li>
                 <li><a href="/disk/index?typeId=1">zip包</a></li>
-                <li><a href="/disk/index?typeId=4">文件夹</a></li>
+                <li><a href="/disk/index?typeId=6">文件夹</a></li>
                 <li><a href="/disk/index?typeId=3">mp3</a></li>
                 <li><a href="/disk/index?typeId=2">txt</a></li>
             </ul>
@@ -269,13 +332,24 @@
                 上传文件
             </button>
             &nbsp;
-            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#myModal2">
+            <button type="button" class="btn btn-primary" data-toggle="modal" onclick="deleteFiles()">
                 删除
             </button>
             &nbsp;
-            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#myModal2">
+            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#myModal1">
                 创建文件夹
             </button>
+            &nbsp;
+            <button type="button" class="btn btn-primary" data-toggle="modal" onclick="checkAll()">
+                全选
+            </button>
+            &nbsp;
+            <button type="button" class="btn btn-primary" data-toggle="modal" onclick="checkInvert()" >
+                反选
+            </button>
+            <c:if test="${parentId!=0&&parentId!=null}">
+                <button type="button" class="btn btn-default" onclick="backLevel('${parentId}')">返回上一级</button>
+            </c:if>
             <!-- Modal -->
             <div class="modal fade" id="myModal2" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
                 <div class="modal-dialog" role="document">
@@ -288,6 +362,7 @@
                         <div class="modal-body">
                             <form id="uploadForm" enctype="multipart/form-data" method="post">
                                 <div class="form-group">
+                                    <input type="hidden" value="${parentId}" name="parentId">
                                     <input id="file" type="file" name="file" class="file"/>
                                 </div>
                             </form>
@@ -305,7 +380,6 @@
                     <thead>
                     <tr>
                         <th>
-                            <input type="checkbox" id="allchecked">
                         </th>
                         <th>文件名</th>
                         <th>文件大小</th>
@@ -315,32 +389,82 @@
                     </thead>
                     <tbody>
                     <c:forEach items="${fileList}" var="file">
-                        <tr>
-                            <td><input type="checkbox"></td>
-                            <td id="name_${file.id}">${file.file_name}</td>
-                            <td><fmt:formatNumber groupingUsed="false" maxFractionDigits="2" minFractionDigits="2"
-                                                  value="${file.file_size / 1024 }"/>M
-                            </td>
-                            <td>${file.type_name}</td>
-                            <td>
-                                <div class="dropdown">
-                                    <a id="dLabel" data-target="#" href="http://example.com" data-toggle="dropdown"
-                                       role="button" aria-haspopup="true" aria-expanded="false">
-                                        菜单
-                                        <span class="caret"></span>
-                                    </a>
+                        <c:choose>
+                            <c:when test="${file.is_parent==1}">
+                                <tr ondblclick="dirOpen('${file.id}')">
+                                    <td><input type="checkbox" name="fileId" value="${file.id}"></td>
+                                    <td id="name_${file.id}">
+                                        <c:choose>
+                                            <c:when test="${file.is_parent==0}">
+                                                <span class="glyphicon glyphicon-file"></span>   &nbsp; ${file.file_name}
+                                            </c:when>
+                                            <c:otherwise>
+                                                <span class="glyphicon glyphicon-folder-open"></span> &nbsp;${file.file_name}
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </td>
+                                    <td><fmt:formatNumber groupingUsed="false" maxFractionDigits="2" minFractionDigits="2"
+                                                          value="${file.file_size / 1024 }"/>M
+                                    </td>
+                                    <td>${file.type_name}</td>
+                                    <td>
+                                        <div class="dropdown ">
+                                            <a id="dLabel" data-target="#" href="http://example.com" data-toggle="dropdown"
+                                               role="button" aria-haspopup="true" aria-expanded="false">
+                                                菜单
+                                                <span class="caret"></span>
+                                            </a>
 
-                                    <ul class="dropdown-menu" aria-labelledby="dLabel">
-                                        <li><a href="javascript:void(0)" onclick="downLoad('${file.file_url}')">下载</a>
-                                        </li>
-                                        <li onclick="changeValue('${file.id}')"><a href="javascript:void(0)">重命名</a>
-                                        </li>
-                                        <li><a href="javascript:void(0)" onclick="deleteFile('${file.file_url}')">删除</a>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </td>
-                        </tr>
+                                            <ul class="dropdown-menu" aria-labelledby="dLabel">
+                                                <li><a href="javascript:void(0)" onclick="downLoad('${file.file_url}')">下载</a>
+                                                </li>
+                                                <li onclick="changeValue('${file.id}')"><a href="javascript:void(0)">重命名</a>
+                                                </li>
+                                                <li><a href="javascript:void(0)" onclick="deleteFile('${file.file_url}')">删除</a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </c:when>
+                            <c:otherwise>
+                                <tr>
+                                    <td><input type="checkbox" name="fileId"  value="${file.id}"></td>
+                                    <td id="name_${file.id}">
+                                        <c:choose>
+                                            <c:when test="${file.is_parent==0}">
+                                                <span class="glyphicon glyphicon-file"></span>   &nbsp; ${file.file_name}
+                                            </c:when>
+                                            <c:otherwise>
+                                                <span class="glyphicon glyphicon-folder-open"></span> &nbsp;${file.file_name}
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </td>
+                                    <td><fmt:formatNumber groupingUsed="false" maxFractionDigits="2" minFractionDigits="2"
+                                                          value="${file.file_size / 1024 }"/>M
+                                    </td>
+                                    <td>${file.type_name}</td>
+                                    <td>
+                                        <div class="dropdown ">
+                                            <a id="dLabel" data-target="#" href="http://example.com" data-toggle="dropdown"
+                                               role="button" aria-haspopup="true" aria-expanded="false">
+                                                菜单
+                                                <span class="caret"></span>
+                                            </a>
+
+                                            <ul class="dropdown-menu" aria-labelledby="dLabel">
+                                                <li><a href="javascript:void(0)" onclick="downLoad('${file.file_url}')">下载</a>
+                                                </li>
+                                                <li onclick="changeValue('${file.id}')"><a href="javascript:void(0)">重命名</a>
+                                                </li>
+                                                <li><a href="javascript:void(0)" onclick="deleteFile('${file.file_url}')">删除</a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </c:otherwise>
+                        </c:choose>
                     </c:forEach>
                     </tbody>
                 </table>

@@ -278,7 +278,8 @@
      select f.id,f.file_name,f.file_size,f.is_parent,f.parent_id,f.file_url,ft.type_name
      from tb_file f left join tb_file_type ft
      on f.file_type=ft.id
-     where f.user_id=#{userId}
+     where f.user_id=#{0}
+     and f.parent_id=#{1}
   </select>
     <select id="conditionQueryFiles" resultType="cn.blingfeng.disk.utils.pojo.DiskFile">
         select f.id,f.file_name,f.file_size,f.is_parent,f.parent_id,f.file_url,ft.type_name
@@ -286,6 +287,13 @@
         on f.file_type=ft.id
         where f.user_id=#{0}
         and ft.id=#{1}
+    </select>
+    <select id="getFileListById" resultType="cn.blingfeng.disk.utils.pojo.DiskFile">
+        select f.id,f.file_name,f.file_size,f.is_parent,f.parent_id,f.file_url,ft.type_name
+        from tb_file f left join tb_file_type ft
+        on f.file_type=ft.id
+        where f.id=#{0}
+        and f.user_id=#{1}
     </select>
 
 </mapper>
